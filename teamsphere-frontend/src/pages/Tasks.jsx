@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getTasks, createTask } from '../services/tasks';
 import { getProjects } from '../services/projects';
+import { getListFromResponse } from '../lib/apiList';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import Modal from '../components/Modal';
@@ -27,7 +28,7 @@ export default function Tasks() {
     setLoading(true);
     try {
       const res = await getTasks();
-      setTasks(res.data);
+      setTasks(getListFromResponse(res.data));
     } catch (e) {
       setError('Failed to load tasks');
     } finally {
@@ -38,7 +39,7 @@ export default function Tasks() {
   async function fetchProjects() {
     try {
       const res = await getProjects();
-      setProjects(res.data);
+      setProjects(getListFromResponse(res.data));
     } catch (e) {}
   }
 

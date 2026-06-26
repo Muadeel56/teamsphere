@@ -4,6 +4,7 @@ import { getTasks } from '../services/tasks';
 import { getTeams } from '../services/teams';
 import { getAttendance } from '../services/attendance';
 import Card from '../components/Card';
+import { getListFromResponse } from '../lib/apiList';
 import { Briefcase, CheckSquare, Users, CalendarDays } from 'lucide-react';
 
 const statList = [
@@ -54,10 +55,10 @@ export default function Dashboard() {
           getAttendance(),
         ]);
         setStats({
-          projects: projects.data.length,
-          tasks: tasks.data.length,
-          teams: teams.data.length,
-          attendance: attendance.data.length,
+          projects: getListFromResponse(projects.data).length,
+          tasks: getListFromResponse(tasks.data).length,
+          teams: getListFromResponse(teams.data).length,
+          attendance: getListFromResponse(attendance.data).length,
         });
       } catch (err) {
         setError('Failed to load dashboard data. Please try again later.');

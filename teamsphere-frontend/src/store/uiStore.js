@@ -9,6 +9,7 @@ export const useUIStore = create(
       sidebarMobileOpen: false,
       toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+      setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
       setSidebarMobile: (open) => set({ sidebarMobileOpen: open }),
     }),
     { name: 'teamsphere-ui' }
