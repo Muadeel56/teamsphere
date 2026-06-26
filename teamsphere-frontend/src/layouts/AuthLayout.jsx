@@ -1,14 +1,4 @@
-import { useEffect } from 'react';
-import { useUIStore } from '../store/uiStore';
-
 export default function AuthLayout({ children }) {
-  const theme = useUIStore((s) => s.theme);
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-  }, [theme]);
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-ts-surface-muted px-4 dark:bg-gray-950">
       <div className="w-full max-w-md rounded-2xl border border-ts-border bg-ts-surface p-8 shadow-lg dark:border-gray-700 dark:bg-gray-900">

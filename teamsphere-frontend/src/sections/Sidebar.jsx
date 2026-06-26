@@ -13,13 +13,13 @@ const navigation = [
 
 export default function Sidebar() {
   const location = useLocation();
-  const { sidebarOpen } = useUIStore();
+  const sidebarMobileOpen = useUIStore((s) => s.sidebarMobileOpen);
 
   return (
     <aside
       className={cn(
         'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-ts-border bg-ts-surface transition-transform duration-200 dark:border-gray-700 dark:bg-gray-900',
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        sidebarMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       )}
     >
       <div className="border-b border-ts-border px-6 py-5 dark:border-gray-700">

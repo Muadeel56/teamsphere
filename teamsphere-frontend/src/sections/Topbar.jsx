@@ -6,7 +6,10 @@ import Button from '../components/Button';
 export default function Topbar() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
-  const { theme, setTheme, sidebarOpen, toggleSidebar } = useUIStore();
+  const theme = useUIStore((s) => s.theme);
+  const toggleTheme = useUIStore((s) => s.toggleTheme);
+  const sidebarMobileOpen = useUIStore((s) => s.sidebarMobileOpen);
+  const setSidebarMobile = useUIStore((s) => s.setSidebarMobile);
 
   const handleLogout = () => {
     logout();
@@ -18,11 +21,11 @@ export default function Topbar() {
       <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={toggleSidebar}
+          onClick={() => setSidebarMobile(!sidebarMobileOpen)}
           className="rounded-lg p-2 text-ts-text-muted hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
           aria-label="Toggle sidebar"
         >
-          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          {sidebarMobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
         <div className="hidden sm:block">
           <p className="text-sm font-medium text-ts-text dark:text-white">Welcome back</p>
@@ -35,7 +38,7 @@ export default function Topbar() {
       <div className="flex items-center gap-2 sm:gap-3">
         <button
           type="button"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          onClick={toggleTheme}
           className="rounded-lg p-2 text-ts-text-muted hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
           aria-label="Toggle theme"
         >
