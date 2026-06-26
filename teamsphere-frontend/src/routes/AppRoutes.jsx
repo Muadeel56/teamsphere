@@ -6,17 +6,10 @@ import Dashboard from '../pages/Dashboard';
 import Projects from '../pages/Projects';
 import Tasks from '../pages/Tasks';
 import Teams from '../pages/Teams';
+import Attendance from '../pages/Attendance';
 import ProtectedRoute from './ProtectedRoute';
 import MainLayout from '../layouts/MainLayout';
 import AuthLayout from '../layouts/AuthLayout';
-
-function AppShell({ children }) {
-  return (
-    <ProtectedRoute>
-      <MainLayout>{children}</MainLayout>
-    </ProtectedRoute>
-  );
-}
 
 export default function AppRoutes() {
   return (
@@ -45,38 +38,15 @@ export default function AppRoutes() {
           </AuthLayout>
         }
       />
-      <Route
-        path="/"
-        element={
-          <AppShell>
-            <Dashboard />
-          </AppShell>
-        }
-      />
-      <Route
-        path="/projects"
-        element={
-          <AppShell>
-            <Projects />
-          </AppShell>
-        }
-      />
-      <Route
-        path="/tasks"
-        element={
-          <AppShell>
-            <Tasks />
-          </AppShell>
-        }
-      />
-      <Route
-        path="/teams"
-        element={
-          <AppShell>
-            <Teams />
-          </AppShell>
-        }
-      />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<MainLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="projects" element={<Projects />} />
+          <Route path="tasks" element={<Tasks />} />
+          <Route path="teams" element={<Teams />} />
+          <Route path="attendance" element={<Attendance />} />
+        </Route>
+      </Route>
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

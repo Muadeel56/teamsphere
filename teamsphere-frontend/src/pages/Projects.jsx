@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getProjects, createProject } from '../services/projects';
+import { getListFromResponse } from '../lib/apiList';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import Modal from '../components/Modal';
@@ -22,7 +23,7 @@ export default function Projects() {
     setLoading(true);
     try {
       const res = await getProjects();
-      setProjects(res.data);
+      setProjects(getListFromResponse(res.data));
     } catch (e) {
       setError('Failed to load projects');
     } finally {
