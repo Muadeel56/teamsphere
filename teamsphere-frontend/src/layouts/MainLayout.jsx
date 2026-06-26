@@ -1,25 +1,20 @@
-import { useEffect } from 'react';
 import Sidebar from '../sections/Sidebar';
 import Topbar from '../sections/Topbar';
 import { useUIStore } from '../store/uiStore';
 
 export default function MainLayout({ children }) {
-  const { theme, sidebarOpen } = useUIStore();
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-  }, [theme]);
+  const sidebarMobileOpen = useUIStore((s) => s.sidebarMobileOpen);
+  const setSidebarMobile = useUIStore((s) => s.setSidebarMobile);
 
   return (
     <div className="min-h-screen bg-ts-surface-muted dark:bg-gray-950">
       <Sidebar />
-      {sidebarOpen && (
+      {sidebarMobileOpen && (
         <button
           type="button"
           aria-label="Close sidebar"
           className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-          onClick={() => useUIStore.getState().toggleSidebar()}
+          onClick={() => setSidebarMobile(false)}
         />
       )}
       <div className="flex min-h-screen flex-col lg:ml-64">
