@@ -7,9 +7,10 @@ import { login as loginApi, getCurrentUser } from '../../services/auth';
 import { useAuthStore } from '../../store/authStore';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import PasswordField from '../../components/auth/PasswordField';
 
 const schema = z.object({
-  email: z.string().email('Enter a valid email address'),
+  email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -59,6 +60,7 @@ export default function Login() {
           type="email"
           autoComplete="email"
           placeholder="you@company.com"
+          disabled={loading}
           error={errors.email?.message}
           className="[&_input]:h-11 [&_input]:rounded-[9px] [&_input]:px-3.5 [&_input]:text-[14.5px]"
           {...register('email')}
@@ -74,16 +76,15 @@ export default function Login() {
             to="/forgot-password"
             className="text-[12.5px] font-medium text-[var(--color-primary)] hover:underline"
           >
-            Forgot?
+            Forgot password?
           </Link>
         </div>
-        <Input
+        <PasswordField
           id="password"
-          type="password"
           autoComplete="current-password"
           placeholder="Your password"
+          disabled={loading}
           error={errors.password?.message}
-          className="[&_input]:h-11 [&_input]:rounded-[9px] [&_input]:px-3.5 [&_input]:text-[14.5px]"
           {...register('password')}
         />
       </div>
