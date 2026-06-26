@@ -1,17 +1,40 @@
 @import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Hanken Grotesk', sans-serif;
+  --font-serif: 'Newsreader', serif;
+  --font-mono: 'IBM Plex Mono', monospace;
 
-  --color-ts-primary: #2463eb;
-  --color-ts-primary-hover: #1d4ed8;
-  --color-ts-secondary: #6366f1;
-  --color-ts-surface: #ffffff;
-  --color-ts-surface-muted: #f9fafb;
-  --color-ts-border: #e5e7eb;
-  --color-ts-text: #111827;
-  --color-ts-text-muted: #6b7280;
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-surface-3: var(--color-surface-3);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+  --color-text: var(--color-text);
+  --color-muted: var(--color-muted);
+  --color-subtle: var(--color-subtle);
+  --color-primary: var(--color-primary);
+  --color-primary-fg: var(--color-primary-fg);
+  --color-primary-subtle: var(--color-primary-subtle);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-danger);
+  --color-info: var(--color-info);
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  /* Legacy bridge — remove in Phase 2 */
+  --color-ts-primary: var(--color-primary);
+  --color-ts-primary-hover: var(--color-primary-hover);
+  --color-ts-surface: var(--color-surface);
+  --color-ts-surface-muted: var(--color-bg);
+  --color-ts-border: var(--color-border);
+  --color-ts-text: var(--color-text);
+  --color-ts-text-muted: var(--color-muted);
 
   --radius-ts: 0.75rem;
 }
@@ -24,17 +47,7 @@
   }
 
   body {
-    @apply min-h-screen bg-ts-surface-muted text-ts-text antialiased;
-  }
-
-  .dark body {
-    @apply bg-gray-950 text-gray-100;
-  }
-
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
+    @apply min-h-screen bg-bg text-text antialiased;
   }
 }
 
