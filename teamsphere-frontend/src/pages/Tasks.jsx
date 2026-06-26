@@ -97,10 +97,10 @@ export default function Tasks() {
         <form onSubmit={handleCreate} className="space-y-4">
           <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Task title" required />
           <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" />
-          <select value={project} onChange={e => setProject(e.target.value)} className="input">
+          <Input as="select" value={project} onChange={e => setProject(e.target.value)}>
             <option value="">Select Project</option>
             {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+          </Input>
           {error && <div className="text-red-500 text-sm">{error}</div>}
           <div className="flex justify-end">
             <Button type="submit" loading={creating}>Create</Button>
