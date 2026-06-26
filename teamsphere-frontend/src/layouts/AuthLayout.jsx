@@ -5,6 +5,7 @@ export default function AuthLayout({ children }) {
   const theme = useUIStore((s) => s.theme);
 
   useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 

@@ -7,6 +7,7 @@ export default function MainLayout({ children }) {
   const { theme, sidebarOpen } = useUIStore();
 
   useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
