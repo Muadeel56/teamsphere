@@ -22,6 +22,13 @@ export const badgeVariants = {
     fg: 'var(--color-success)',
     border: 'transparent',
   },
+  'on-hold': {
+    label: 'On hold',
+    dot: 'var(--color-warning)',
+    bg: 'var(--color-warning-subtle)',
+    fg: 'var(--color-warning)',
+    border: 'transparent',
+  },
   admin: {
     label: 'Admin',
     dot: 'var(--color-primary)',
