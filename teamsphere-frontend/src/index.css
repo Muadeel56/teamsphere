@@ -76,6 +76,8 @@ textarea::placeholder {
   --panel-text: oklch(0.97 0.012 165);
   --panel-muted: oklch(0.80 0.030 172);
   --panel-accent: oklch(0.82 0.12 178);
+  --skel: linear-gradient(90deg, var(--color-surface-2) 25%, var(--color-surface-3) 50%, var(--color-surface-2) 75%);
+  --glow-op: 0.13;
 }
 
 [data-theme="dark"] {
@@ -121,6 +123,8 @@ textarea::placeholder {
   --panel-text: oklch(0.96 0.010 165);
   --panel-muted: oklch(0.76 0.022 172);
   --panel-accent: oklch(0.84 0.12 178);
+  --skel: linear-gradient(90deg, var(--color-surface-2) 25%, var(--color-surface-3) 50%, var(--color-surface-2) 75%);
+  --glow-op: 0.5;
 }
 
 @keyframes ds-rise {
@@ -226,5 +230,36 @@ textarea::placeholder {
   }
   to {
     transform: translateY(-11px);
+  }
+}
+
+@keyframes ds-shimmer {
+  0% {
+    background-position: 160% 0;
+  }
+  100% {
+    background-position: -160% 0;
+  }
+}
+
+@keyframes ds-floaty {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-6px);
+  }
+}
+
+.dashboard-two-col {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-two-col {
+    grid-template-columns: 1fr;
   }
 }

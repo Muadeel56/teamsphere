@@ -1,148 +1,314 @@
 import { useEffect, useState } from 'react';
-import { getProjects } from '../services/projects';
-import { getTasks } from '../services/tasks';
-import { getTeams } from '../services/teams';
-import { getAttendance } from '../services/attendance';
-import Card from '../components/Card';
-import { getListFromResponse } from '../lib/apiList';
-import { Briefcase, CheckSquare, Users, CalendarDays } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, FolderOpen } from 'lucide-react';
 
-const statList = [
-  {
-    label: 'Projects',
-    key: 'projects',
-    icon: Briefcase,
-    accent: 'bg-blue-500',
-    iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400',
-  },
-  {
-    label: 'Tasks',
-    key: 'tasks',
-    icon: CheckSquare,
-    accent: 'bg-emerald-500',
-    iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400',
-  },
-  {
-    label: 'Teams',
-    key: 'teams',
-    icon: Users,
-    accent: 'bg-violet-500',
-    iconBg: 'bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400',
-  },
-  {
-    label: 'Attendance',
-    key: 'attendance',
-    icon: CalendarDays,
-    accent: 'bg-amber-500',
-    iconBg: 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400',
-  },
-];
+import { useAuthStore } from '../store/authStore';
+import { getUserDisplayName } from '../lib/userInitials';
+import { getDashboardData } from '../services/dashboard';
+import { VELOCITY_BARS, RECENT_ACTIVITY } from '../data/dashboardSeed';
+
+import Button from '../components/Button';
+import DashboardKpiCard from '../components/dashboard/DashboardKpiCard';
+import VelocityChart from '../components/dashboard/VelocityChart';
+import RecentActivityFeed from '../components/dashboard/RecentActivityFeed';
+
+function getGreeting() {
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+}
+
+const shimmerStyle = {
+  background: 'var(--skel)',
+  backgroundSize: '300% 100%',
+  animation: 'ds-shimmer 1.3s infinite linear',
+  borderRadius: '8px',
+};
+
+function KpiSkeletonCard() {
+  return (
+    <div
+      style={{
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: '14px',
+        padding: '18px',
+        boxShadow: 'var(--shadow-sm)',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ ...shimmerStyle, width: '80px', height: '13px' }} />
+        <div style={{ ...shimmerStyle, width: '30px', height: '30px', borderRadius: '8px' }} />
+      </div>
+      <div style={{ ...shimmerStyle, width: '64px', height: '32px', margin: '14px 0 8px' }} />
+      <div style={{ ...shimmerStyle, width: '100px', height: '12px' }} />
+    </div>
+  );
+}
+
+function KpiSkeletonGrid() {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(216px, 1fr))',
+        gap: '16px',
+        marginTop: '24px',
+      }}
+    >
+      {[0, 1, 2, 3].map((i) => <KpiSkeletonCard key={i} />)}
+    </div>
+  );
+}
+
+function EmptyState({ onAction }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center',
+        padding: '72px 24px',
+        animation: 'ds-rise .4s cubic-bezier(.2,.8,.2,1) both',
+      }}
+    >
+      <div
+        style={{
+          width: '84px',
+          height: '84px',
+          borderRadius: '22px',
+          background: 'var(--color-surface-2)',
+          border: '1px solid var(--color-border)',
+          display: 'grid',
+          placeItems: 'center',
+          marginBottom: '24px',
+          animation: 'ds-floaty 3s ease-in-out infinite alternate',
+          color: 'var(--color-muted)',
+        }}
+      >
+        <FolderOpen size={36} strokeWidth={1.4} />
+      </div>
+      <h3
+        style={{
+          font: "500 24px 'Newsreader'",
+          letterSpacing: '-0.01em',
+          margin: '0 0 10px',
+          color: 'var(--color-text)',
+        }}
+      >
+        Nothing here yet
+      </h3>
+      <p
+        style={{
+          font: "400 15px/1.6 'Hanken Grotesk'",
+          color: 'var(--color-muted)',
+          margin: '0 0 26px',
+          maxWidth: '42ch',
+        }}
+      >
+        Create your first project to start tracking work across your teams.
+      </p>
+      <Button onClick={onAction} icon={<Plus size={16} />}>
+        Create project
+      </Button>
+    </div>
+  );
+}
 
 export default function Dashboard() {
-  const [stats, setStats] = useState({ projects: 0, tasks: 0, teams: 0, attendance: 0 });
+  const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const firstName = user?.first_name || getUserDisplayName(user).split(' ')[0];
+
+  const greeting = getGreeting();
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date());
+
+  const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchStats() {
-      setLoading(true);
-      setError(null);
-      try {
-        const [projects, tasks, teams, attendance] = await Promise.all([
-          getProjects(),
-          getTasks(),
-          getTeams(),
-          getAttendance(),
-        ]);
-        setStats({
-          projects: getListFromResponse(projects.data).length,
-          tasks: getListFromResponse(tasks.data).length,
-          teams: getListFromResponse(teams.data).length,
-          attendance: getListFromResponse(attendance.data).length,
-        });
-      } catch (err) {
-        setError('Failed to load dashboard data. Please try again later.');
-        console.error('Dashboard data fetch error:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchStats();
+    getDashboardData()
+      .then((data) => setKpis(data.kpis))
+      .catch((err) => setError(err?.message || 'Failed to load dashboard data.'))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-ts-primary border-t-transparent" />
-          <p className="text-sm text-ts-text-muted dark:text-gray-400">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  const kpiDefs = [
+    {
+      label: 'Active projects',
+      value: kpis?.projects ?? '—',
+      glyph: 'P',
+      tintBg: 'var(--color-primary-subtle)',
+      tintFg: 'var(--color-primary)',
+      delta: kpis ? '+2' : '—',
+      deltaNote: 'this month',
+      deltaColor: 'var(--color-success)',
+      animationDelay: '0.02s',
+    },
+    {
+      label: 'Tasks due today',
+      value: kpis?.tasks ?? '—',
+      glyph: 'T',
+      tintBg: 'var(--color-warning-subtle)',
+      tintFg: 'var(--color-warning)',
+      delta: kpis ? '3' : '—',
+      deltaNote: 'high priority',
+      deltaColor: 'var(--color-warning)',
+      animationDelay: '0.09s',
+    },
+    {
+      label: 'Team online',
+      value: kpis ? String(kpis.teamOnline) : '—',
+      glyph: 'U',
+      tintBg: 'var(--color-info-subtle)',
+      tintFg: 'var(--color-info)',
+      delta: 'of 31',
+      deltaNote: 'members',
+      deltaColor: 'var(--color-muted)',
+      animationDelay: '0.16s',
+    },
+    {
+      label: 'Attendance',
+      value: kpis ? `${kpis.attendance}%` : '—',
+      glyph: 'A',
+      tintBg: 'var(--color-success-subtle)',
+      tintFg: 'var(--color-success)',
+      delta: '+1.2%',
+      deltaNote: 'vs last week',
+      deltaColor: 'var(--color-success)',
+      animationDelay: '0.23s',
+    },
+  ];
 
-  if (error) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Card className="max-w-md text-center">
-          <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>
-        </Card>
-      </div>
-    );
-  }
+  const isEmpty = kpis && kpis.projects === 0 && kpis.tasks === 0;
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <header className="ts-page-header">
-        <h1 className="ts-page-title">Dashboard Overview</h1>
-        <p className="ts-page-subtitle">
-          Welcome back! Here&apos;s what&apos;s happening with your team.
-        </p>
-      </header>
-
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        {statList.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={stat.key} className="overflow-hidden p-0">
-              <div className={`h-1 ${stat.accent}`} />
-              <div className="flex items-start justify-between p-5">
-                <div>
-                  <p className="text-sm font-medium text-ts-text-muted dark:text-gray-400">
-                    {stat.label}
-                  </p>
-                  <p className="mt-2 text-4xl font-bold tracking-tight text-ts-text dark:text-white">
-                    {stats[stat.key]}
-                  </p>
-                </div>
-                <div className={`rounded-xl p-3 ${stat.iconBg}`}>
-                  <Icon size={22} />
-                </div>
-              </div>
-            </Card>
-          );
-        })}
+    <div>
+      {/* Page header */}
+      <div style={{ animation: 'ds-rise .4s cubic-bezier(.2,.8,.2,1) both' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            gap: '16px',
+            flexWrap: 'wrap',
+            marginBottom: '6px',
+          }}
+        >
+          <div>
+            <h2
+              style={{
+                font: "500 30px/1.15 'Newsreader'",
+                letterSpacing: '-0.01em',
+                margin: 0,
+                color: 'var(--color-text)',
+              }}
+            >
+              {greeting}, {firstName}
+            </h2>
+            <p
+              style={{
+                font: "400 15px 'Hanken Grotesk'",
+                color: 'var(--color-muted)',
+                margin: '7px 0 0',
+              }}
+            >
+              Here&apos;s where your teams stand today — {formattedDate}
+            </p>
+          </div>
+          <Button onClick={() => navigate('/projects')} icon={<Plus size={16} />}>
+            New project
+          </Button>
+        </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Card>
-          <h2 className="text-lg font-semibold text-ts-text dark:text-white">Quick summary</h2>
-          <p className="mt-2 text-sm leading-relaxed text-ts-text-muted dark:text-gray-400">
-            You have <strong className="text-ts-text dark:text-white">{stats.projects}</strong> active
-            projects, <strong className="text-ts-text dark:text-white">{stats.tasks}</strong> tasks,
-            and <strong className="text-ts-text dark:text-white">{stats.teams}</strong> teams on the
-            platform.
-          </p>
-        </Card>
-        <Card>
-          <h2 className="text-lg font-semibold text-ts-text dark:text-white">Getting started</h2>
-          <ul className="mt-3 space-y-2 text-sm text-ts-text-muted dark:text-gray-400">
-            <li>Use the sidebar to manage projects, tasks, and teams.</li>
-            <li>Track attendance from the Attendance section.</li>
-            <li>Invite teammates to collaborate on shared work.</li>
-          </ul>
-        </Card>
-      </div>
+      {/* Inline error banner */}
+      {error && (
+        <div
+          style={{
+            background: 'var(--color-danger-subtle)',
+            border: '1px solid var(--color-danger)',
+            borderRadius: '10px',
+            padding: '12px 16px',
+            marginTop: '16px',
+            font: "400 13px 'Hanken Grotesk'",
+            color: 'var(--color-danger)',
+          }}
+        >
+          {error}
+        </div>
+      )}
+
+      {/* KPI grid */}
+      {loading ? (
+        <KpiSkeletonGrid />
+      ) : isEmpty ? (
+        <EmptyState onAction={() => navigate('/projects')} />
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(216px, 1fr))',
+            gap: '16px',
+            marginTop: '24px',
+          }}
+        >
+          {kpiDefs.map((k) => (
+            <DashboardKpiCard key={k.label} {...k} />
+          ))}
+        </div>
+      )}
+
+      {/* Two-column: velocity + activity */}
+      {!loading && !isEmpty && (
+        <div className="dashboard-two-col">
+          <VelocityChart bars={VELOCITY_BARS} />
+          <RecentActivityFeed items={RECENT_ACTIVITY} />
+        </div>
+      )}
+
+      {/* Content slot */}
+      {!loading && !isEmpty && (
+        <div
+          style={{
+            marginTop: '16px',
+            border: '1.5px dashed var(--color-border-strong)',
+            borderRadius: '14px',
+            padding: '26px',
+            textAlign: 'center',
+            background: 'var(--color-surface-2)',
+          }}
+        >
+          <div
+            style={{
+              font: "500 12px 'IBM Plex Mono'",
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'var(--color-subtle)',
+            }}
+          >
+            Content slot
+          </div>
+          <div
+            style={{
+              font: "400 14px 'Hanken Grotesk'",
+              color: 'var(--color-muted)',
+              marginTop: '8px',
+              maxWidth: '46ch',
+              marginInline: 'auto',
+            }}
+          >
+            Page content renders here. Swap this for Projects, Tasks, Teams, or Attendance — the shell stays put.
+          </div>
+        </div>
+      )}
     </div>
   );
 }

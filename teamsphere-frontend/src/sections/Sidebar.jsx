@@ -66,7 +66,7 @@ export default function Sidebar() {
         <button
           type="button"
           aria-label="Close user menu"
-          className="fixed inset-0 z-[65] cursor-default border-none bg-transparent"
+          className="fixed inset-0 z-[55] cursor-default border-none bg-transparent"
           onClick={() => setUserMenuOpen(false)}
         />
       )}

@@ -29,10 +29,11 @@ export default function Login() {
     try {
       const res = await loginApi({ email: data.email, password: data.password });
       const token = res.data.access;
+      const refreshToken = res.data.refresh;
       if (!token) throw new Error('No token received');
-      setAuth(null, token);
+      setAuth(null, token, refreshToken);
       const userRes = await getCurrentUser();
-      setAuth(userRes.data, token);
+      setAuth(userRes.data, token, refreshToken);
       navigate('/');
     } catch (err) {
       setError('Invalid email or password. Please try again.');
