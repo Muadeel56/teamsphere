@@ -50,6 +50,27 @@ export const badgeVariants = {
     fg: 'var(--color-muted)',
     border: 'transparent',
   },
+  high: {
+    label: 'High',
+    dot: 'var(--color-danger)',
+    bg: 'var(--color-danger-subtle)',
+    fg: 'var(--color-danger)',
+    border: 'transparent',
+  },
+  medium: {
+    label: 'Medium',
+    dot: 'var(--color-warning)',
+    bg: 'var(--color-warning-subtle)',
+    fg: 'var(--color-warning)',
+    border: 'transparent',
+  },
+  low: {
+    label: 'Low',
+    dot: 'var(--color-muted)',
+    bg: 'var(--color-surface-2)',
+    fg: 'var(--color-muted)',
+    border: 'var(--color-border)',
+  },
 };
 
 export default function Badge({
