@@ -1,89 +1,226 @@
-import { useEffect, useState } from 'react';
-import { getTeams, createTeam } from '../services/teams';
-import { getListFromResponse } from '../lib/apiList';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { useAuthStore } from '../store/authStore';
+import {
+  deleteTeam,
+  getTeam,
+  getTeamsPageData,
+  removeTeamMember,
+  updateMemberRole,
+} from '../services/teams';
+import { enrichTeam } from '../lib/teamHelpers';
+
 import Button from '../components/Button';
-import Input from '../components/Input';
-import Modal from '../components/Modal';
-import Card from '../components/Card';
-import { Plus, Users } from 'lucide-react';
+import TeamCard from '../components/teams/TeamCard';
+import { TeamsSkeletonGrid } from '../components/teams/TeamCardSkeleton';
+import TeamsEmptyState from '../components/teams/TeamsEmptyState';
+import TeamsErrorState from '../components/teams/TeamsErrorState';
+import TeamDetailDrawer from '../components/teams/TeamDetailDrawer';
+import NewTeamModal from '../components/teams/NewTeamModal';
+import InviteMemberModal from '../components/teams/InviteMemberModal';
 
 export default function Teams() {
+  const user = useAuthStore((s) => s.user);
+
   const [teams, setTeams] = useState([]);
+  const [userMap, setUserMap] = useState({});
+  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [error, setError] = useState('');
-  const [creating, setCreating] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState(null);
+  const [selectedTeamDetail, setSelectedTeamDetail] = useState(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [inviteTeamId, setInviteTeamId] = useState(null);
+  const [kebabOpenId, setKebabOpenId] = useState(null);
 
-  useEffect(() => {
-    fetchTeams();
-  }, []);
-
-  async function fetchTeams() {
+  const loadTeams = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
-      const res = await getTeams();
-      setTeams(getListFromResponse(res.data));
-    } catch (e) {
-      setError('Failed to load teams');
+      const data = await getTeamsPageData(user);
+      setTeams(data.teams);
+      setUserMap(data.userMap);
+      setAllUsers(data.allUsers);
+      return data;
+    } catch {
+      setLoadError(true);
+      return null;
     } finally {
       setLoading(false);
     }
-  }
+  }, [user]);
 
-  async function handleCreate(e) {
-    e.preventDefault();
-    setError('');
-    setCreating(true);
-    try {
-      await createTeam({ name });
-      setName('');
-      setModalOpen(false);
-      fetchTeams();
-    } catch (e) {
-      setError('Failed to create team');
-    } finally {
-      setCreating(false);
+  useEffect(() => {
+    loadTeams();
+  }, [loadTeams]);
+
+  const refreshSelectedTeam = useCallback(
+    async (teamId, mapOverride) => {
+      if (!teamId) return;
+      try {
+        const res = await getTeam(teamId);
+        const map = mapOverride ?? userMap;
+        setSelectedTeamDetail(enrichTeam(res.data, map));
+      } catch {
+        toast.error('Failed to refresh team details.');
+      }
+    },
+    [userMap],
+  );
+
+  useEffect(() => {
+    if (!selectedTeamId) {
+      setSelectedTeamDetail(null);
+      return;
     }
-  }
+    const fromList = teams.find((t) => t.id === selectedTeamId);
+    if (fromList) {
+      setSelectedTeamDetail(fromList);
+    }
+    refreshSelectedTeam(selectedTeamId);
+  }, [selectedTeamId, teams, refreshSelectedTeam]);
+
+  const selectedTeam = useMemo(() => {
+    if (selectedTeamDetail) return selectedTeamDetail;
+    return teams.find((t) => t.id === selectedTeamId) ?? null;
+  }, [selectedTeamDetail, selectedTeamId, teams]);
+
+  const handleViewTeam = (teamId) => {
+    setKebabOpenId(null);
+    setSelectedTeamId(teamId);
+  };
+
+  const handleDeleteTeam = async (teamId) => {
+    try {
+      await deleteTeam(teamId);
+      toast.success('Team deleted');
+      if (selectedTeamId === teamId) setSelectedTeamId(null);
+      await loadTeams();
+    } catch {
+      toast.error('Failed to delete team. Please try again.');
+    }
+  };
+
+  const handleRoleChange = async (userId, role) => {
+    if (!selectedTeamId) return;
+    try {
+      await updateMemberRole(userId, role);
+      toast.success('Role updated');
+      const data = await loadTeams();
+      await refreshSelectedTeam(selectedTeamId, data?.userMap);
+    } catch {
+      toast.error('Failed to update role. Please try again.');
+    }
+  };
+
+  const handleRemoveMember = async (userId) => {
+    if (!selectedTeamId) return;
+    try {
+      await removeTeamMember(selectedTeamId, userId);
+      toast.success('Member removed');
+      const data = await loadTeams();
+      await refreshSelectedTeam(selectedTeamId, data?.userMap);
+    } catch {
+      toast.error('Failed to remove member. Please try again.');
+    }
+  };
+
+  const handleInvite = () => {
+    if (!selectedTeamId) return;
+    setInviteTeamId(selectedTeamId);
+    setInviteModalOpen(true);
+  };
+
+  const handleInvited = async () => {
+    const data = await loadTeams();
+    if (inviteTeamId) await refreshSelectedTeam(inviteTeamId, data?.userMap);
+  };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Teams</h2>
-        <Button icon={<Plus size={18} />} onClick={() => setModalOpen(true)}>
-          Add Team
+    <div style={{ animation: 'ds-rise .4s cubic-bezier(.2,.8,.2,1) both' }}>
+      {kebabOpenId != null && (
+        <button
+          type="button"
+          aria-label="Close menu"
+          className="fixed inset-0 z-[25] cursor-default border-none bg-transparent p-0"
+          onClick={() => setKebabOpenId(null)}
+        />
+      )}
+
+      <div className="flex items-end justify-between gap-4 flex-wrap mb-[26px]">
+        <div>
+          <div className="flex items-center gap-[11px]">
+            <h2 className="font-serif text-[30px] font-medium leading-tight tracking-[-0.01em] text-[var(--color-text)] m-0">
+              Teams
+            </h2>
+            {!loading && !loadError && (
+              <span className="font-mono text-[13px] font-semibold text-[var(--color-muted)] bg-[var(--color-surface-2)] border border-[var(--color-border)] px-2.5 py-0.5 rounded-full">
+                {teams.length} teams
+              </span>
+            )}
+          </div>
+          <p className="text-[15px] text-[var(--color-muted)] mt-[7px] mb-0">
+            The groups doing the work, and who&apos;s in them.
+          </p>
+        </div>
+        <Button icon={<Plus size={16} />} onClick={() => setCreateModalOpen(true)}>
+          New team
         </Button>
       </div>
-      {error && <div className="text-red-500 mb-2">{error}</div>}
-      {loading ? (
-        <div>Loading...</div>
-      ) : teams.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-          <Users size={48} />
-          <div className="mt-2 text-lg">No teams yet. Click "Add Team" to get started!</div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {teams.map(t => (
-            <Card key={t.id} className="flex flex-col gap-2 hover:shadow-xl transition-shadow cursor-pointer group">
-              <div className="flex items-center gap-2 mb-2">
-                <Users size={22} className="text-pink-500 group-hover:text-pink-700" />
-                <div className="font-semibold text-lg truncate">{t.name}</div>
-              </div>
-            </Card>
+
+      {loading && <TeamsSkeletonGrid />}
+
+      {!loading && loadError && <TeamsErrorState onRetry={loadTeams} />}
+
+      {!loading && !loadError && teams.length === 0 && (
+        <TeamsEmptyState onCreate={() => setCreateModalOpen(true)} />
+      )}
+
+      {!loading && !loadError && teams.length > 0 && (
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-[18px]">
+          {teams.map((team, index) => (
+            <TeamCard
+              key={team.id}
+              team={team}
+              animationDelay={`${index * 0.04}s`}
+              kebabOpen={kebabOpenId === team.id}
+              onKebabToggle={setKebabOpenId}
+              onView={() => handleViewTeam(team.id)}
+              onDelete={() => handleDeleteTeam(team.id)}
+            />
           ))}
         </div>
       )}
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add Team">
-        <form onSubmit={handleCreate} className="space-y-4">
-          <Input value={name} onChange={e => setName(e.target.value)} placeholder="Team name" required />
-          {error && <div className="text-red-500 text-sm">{error}</div>}
-          <div className="flex justify-end">
-            <Button type="submit" loading={creating}>Create</Button>
-          </div>
-        </form>
-      </Modal>
+
+      <TeamDetailDrawer
+        open={Boolean(selectedTeamId)}
+        team={selectedTeam}
+        currentUser={user}
+        onClose={() => setSelectedTeamId(null)}
+        onInvite={handleInvite}
+        onRoleChange={handleRoleChange}
+        onRemoveMember={handleRemoveMember}
+      />
+
+      <NewTeamModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onCreated={loadTeams}
+        memberOptions={allUsers}
+      />
+
+      <InviteMemberModal
+        open={inviteModalOpen}
+        teamId={inviteTeamId}
+        onClose={() => {
+          setInviteModalOpen(false);
+          setInviteTeamId(null);
+        }}
+        onInvited={handleInvited}
+      />
     </div>
   );
-} 
+}

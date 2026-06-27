@@ -145,6 +145,10 @@ REST_FRAMEWORK = {
 DJOSER = {
     'USER_ID_FIELD': 'id',
     'LOGIN_FIELD': 'email',
+    'SERIALIZERS': {
+        'user': 'users.serializers.UserMeSerializer',
+        'current_user': 'users.serializers.UserMeSerializer',
+    },
 }
 
 # CORS
