@@ -51,9 +51,14 @@ export function buildUserMap(currentUser, teams) {
 
   for (const team of teams) {
     const members = team.members ?? [];
-    for (const memberId of members) {
-      if (!map[memberId]) {
-        map[memberId] = { id: memberId, username: `Member ${memberId}` };
+    for (const member of members) {
+      const id = typeof member === 'object' ? member.id : member;
+      if (!id) continue;
+      if (!map[id]) {
+        map[id] =
+          typeof member === 'object'
+            ? member
+            : { id, username: `Member ${id}` };
       }
     }
   }
