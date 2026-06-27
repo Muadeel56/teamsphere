@@ -20,7 +20,7 @@ export default function KanbanBoard({
   userMap,
   onTaskStatusChange,
 }) {
-  const { isMobile } = useBreakpoint();
+  const { isMobile, isTablet } = useBreakpoint();
   const [activeTaskId, setActiveTaskId] = useState(null);
 
   const sensors = useSensors(
@@ -77,11 +77,10 @@ export default function KanbanBoard({
     >
       <div
         className={
-          isMobile
+          isMobile || isTablet
             ? 'flex gap-4 overflow-x-auto pb-2 -mx-1 px-1'
             : 'grid grid-cols-3 gap-4'
         }
-        style={{ animation: 'ds-rise .4s cubic-bezier(.2,.8,.2,1) both' }}
       >
         {BOARD_COLUMNS.map((col) => (
           <KanbanColumn

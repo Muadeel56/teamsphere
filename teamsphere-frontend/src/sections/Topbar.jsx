@@ -126,7 +126,7 @@ export default function Topbar({ title }) {
             className={cn(
               'grid h-[38px] w-[38px] shrink-0 cursor-pointer place-items-center rounded-[9px]',
               'border border-[var(--color-border-strong)] bg-[var(--color-surface)] text-[var(--color-muted)]',
-              'hover:bg-[var(--color-surface-2)]',
+              'hover:bg-[var(--color-surface-2)] focus:outline-none focus:shadow-[0_0_0_3px_var(--color-ring)]',
             )}
           >
             <Search size={17} />
@@ -191,7 +191,7 @@ export default function Topbar({ title }) {
 
               <button
                 type="button"
-                className="h-[42px] w-full cursor-pointer border-t border-[var(--color-border)] bg-[var(--color-surface)] text-[13px] font-semibold text-[var(--color-primary)] hover:bg-[var(--color-surface-2)]"
+                className="h-[42px] w-full cursor-pointer border-t border-[var(--color-border)] bg-[var(--color-surface)] text-[13px] font-semibold text-[var(--color-primary)] hover:bg-[var(--color-surface-2)] focus:outline-none focus-visible:shadow-[0_0_0_3px_var(--color-ring)]"
               >
                 View all notifications
               </button>

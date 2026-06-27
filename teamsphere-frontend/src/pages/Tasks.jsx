@@ -121,10 +121,7 @@ export default function Tasks() {
   return (
     <div>
       {/* Page header */}
-      <div
-        className="flex items-end justify-between gap-4 flex-wrap mb-[22px]"
-        style={{ animation: 'ds-rise .4s cubic-bezier(.2,.8,.2,1) both' }}
-      >
+      <div className="flex items-end justify-between gap-4 flex-wrap mb-[22px]">
         <div>
           <div className="flex items-center gap-[11px]">
             <h2 className="font-serif text-[30px] font-medium leading-[1.15] tracking-[-0.01em] text-[var(--color-text)] m-0">
@@ -169,10 +166,7 @@ export default function Tasks() {
       ) : filteredTasks.length === 0 ? (
         <TasksEmptyState filtered onCreate={() => setModalOpen(true)} />
       ) : viewMode === 'list' ? (
-        <div
-          className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[14px] shadow-[var(--shadow-sm)] overflow-hidden"
-          style={{ animation: 'ds-rise .4s cubic-bezier(.2,.8,.2,1) both' }}
-        >
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[14px] shadow-[var(--shadow-sm)] overflow-hidden">
           {filteredTasks.map((task, index) => (
             <div
               key={task.id}

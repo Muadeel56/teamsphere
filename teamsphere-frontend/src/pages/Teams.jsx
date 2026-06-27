@@ -140,7 +140,7 @@ export default function Teams() {
   };
 
   return (
-    <div style={{ animation: 'ds-rise .4s cubic-bezier(.2,.8,.2,1) both' }}>
+    <div>
       {kebabOpenId != null && (
         <button
           type="button"

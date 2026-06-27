@@ -15,6 +15,7 @@ export default function HeaderClockButton({
       onClick={isClockedIn ? onCheckOut : onCheckIn}
       disabled={loading}
       aria-label={isClockedIn ? 'Check out' : 'Check in'}
+      className="focus:outline-none focus-visible:shadow-[0_0_0_3px_var(--color-ring)]"
       style={{
         display: 'inline-flex',
         alignItems: 'center',

@@ -1,18 +1,13 @@
-const shimmerStyle = {
-  background: 'var(--skel)',
-  backgroundSize: '300% 100%',
-  animation: 'ds-shimmer 1.3s infinite linear',
-  borderRadius: '8px',
-};
+import { SkeletonBlock } from '../SkeletonCard';
 
 function KanbanCardSkeleton() {
   return (
     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-3.5 mb-2.5">
-      <div style={{ ...shimmerStyle, width: '85%', height: '14px', marginBottom: '12px' }} />
-      <div style={{ ...shimmerStyle, width: '60px', height: '20px', marginBottom: '12px', borderRadius: '7px' }} />
+      <SkeletonBlock className="h-[14px] w-[85%] mb-3" />
+      <SkeletonBlock className="h-5 w-[60px] mb-3 rounded-[7px]" />
       <div className="flex justify-between">
-        <div style={{ ...shimmerStyle, width: '56px', height: '20px', borderRadius: '7px' }} />
-        <div style={{ ...shimmerStyle, width: '26px', height: '26px', borderRadius: '999px' }} />
+        <SkeletonBlock className="h-5 w-14 rounded-[7px]" />
+        <SkeletonBlock className="h-[26px] w-[26px] rounded-full" />
       </div>
     </div>
   );
@@ -21,7 +16,7 @@ function KanbanCardSkeleton() {
 function KanbanColumnSkeleton() {
   return (
     <div className="min-w-[284px] bg-[var(--color-surface-2)] border border-[var(--color-border)] rounded-[14px] p-3.5">
-      <div style={{ ...shimmerStyle, width: '96px', height: '16px', marginBottom: '16px' }} />
+      <SkeletonBlock className="h-4 w-24 mb-4" />
       {Array.from({ length: 3 }, (_, i) => (
         <KanbanCardSkeleton key={i} />
       ))}
@@ -38,10 +33,10 @@ export default function TasksSkeleton({ viewMode = 'board' }) {
             key={i}
             className="flex items-center gap-3 px-4 py-3 border-b border-[var(--color-border)] last:border-b-0"
           >
-            <div style={{ ...shimmerStyle, width: '18px', height: '18px', borderRadius: '999px' }} />
-            <div style={{ ...shimmerStyle, flex: 1, height: '14px' }} />
-            <div style={{ ...shimmerStyle, width: '72px', height: '21px', borderRadius: '7px' }} />
-            <div style={{ ...shimmerStyle, width: '56px', height: '24px', borderRadius: '999px' }} />
+            <SkeletonBlock className="h-[18px] w-[18px] rounded-full" />
+            <SkeletonBlock className="h-[14px] flex-1" />
+            <SkeletonBlock className="h-[21px] w-[72px] rounded-[7px]" />
+            <SkeletonBlock className="h-6 w-14 rounded-full" />
           </div>
         ))}
       </div>

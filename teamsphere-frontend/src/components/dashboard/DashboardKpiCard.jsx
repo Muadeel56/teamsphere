@@ -17,7 +17,7 @@ export default function DashboardKpiCard({
         borderRadius: '14px',
         padding: '18px',
         boxShadow: 'var(--shadow-sm)',
-        animation: `ds-rise .45s cubic-bezier(.2,.8,.2,1) both`,
+        animation: `ds-rise .4s cubic-bezier(.2,.8,.2,1) both`,
         animationDelay,
       }}
     >

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, Users, Clock, AlertTriangle, Timer } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useAuthStore } from '../store/authStore';
@@ -8,11 +8,12 @@ import {
   checkOut,
   getAttendancePageData,
 } from '../services/attendance';
-import { exportAttendanceCsv, formatElapsed } from '../lib/attendanceHelpers';
+import { computeAttendanceStats, exportAttendanceGroupsCsv, formatElapsed } from '../lib/attendanceHelpers';
 
 import Button from '../components/Button';
-import DashboardKpiCard from '../components/dashboard/DashboardKpiCard';
-import AttendanceWeeklyTable from '../components/attendance/AttendanceWeeklyTable';
+import AttendanceStatChip from '../components/attendance/AttendanceStatChip';
+import AttendanceRecordGroups from '../components/attendance/AttendanceRecordGroups';
+import AttendanceHeatmap from '../components/attendance/AttendanceHeatmap';
 import HeaderClockButton from '../components/attendance/HeaderClockButton';
 import AttendanceSkeleton, { AttendanceKpiSkeleton } from '../components/attendance/AttendanceSkeleton';
 import AttendanceEmptyState from '../components/attendance/AttendanceEmptyState';
@@ -27,14 +28,7 @@ const PRESETS = [
 function DateRangePicker({ value, onChange }) {
   return (
     <div
-      style={{
-        display: 'flex',
-        gap: '2px',
-        padding: '3px',
-        borderRadius: '9px',
-        border: '1px solid var(--color-border)',
-        background: 'var(--color-surface)',
-      }}
+      className="flex gap-0.5 p-[3px] rounded-[9px] border border-[var(--color-border)] bg-[var(--color-surface)]"
       role="group"
       aria-label="Date range"
     >
@@ -46,16 +40,10 @@ function DateRangePicker({ value, onChange }) {
             type="button"
             onClick={() => onChange(preset.id)}
             aria-pressed={active}
+            className="h-[34px] px-[13px] rounded-[7px] border-none cursor-pointer text-[13px] font-semibold transition-[background,color] duration-150 focus:outline-none focus-visible:shadow-[0_0_0_3px_var(--color-ring)]"
             style={{
-              height: '34px',
-              padding: '0 13px',
-              borderRadius: '7px',
-              border: 'none',
-              cursor: 'pointer',
-              font: "600 13px 'Hanken Grotesk'",
               background: active ? 'var(--color-primary-subtle)' : 'transparent',
               color: active ? 'var(--color-primary)' : 'var(--color-muted)',
-              transition: 'background .15s, color .15s',
             }}
           >
             {preset.label}
@@ -70,8 +58,11 @@ export default function Attendance() {
   const user = useAuthStore((s) => s.user);
 
   const [datePreset, setDatePreset] = useState('today');
-  const [weeklyGrid, setWeeklyGrid] = useState([]);
-  const [summary, setSummary] = useState({ present: 0, absent: 0, late: 0, rate: 0 });
+  const [groups, setGroups] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [records, setRecords] = useState([]);
+  const [dateRange, setDateRange] = useState({ preset: 'today', start: '', end: '' });
+  const [heatmapWeeks, setHeatmapWeeks] = useState([]);
   const [activeSession, setActiveSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -85,8 +76,11 @@ export default function Attendance() {
     setLoadError(false);
     try {
       const data = await getAttendancePageData(user, { preset: datePreset });
-      setWeeklyGrid(data.weeklyGrid);
-      setSummary(data.summary);
+      setGroups(data.groups);
+      setUsers(data.users);
+      setRecords(data.records);
+      setDateRange(data.range);
+      setHeatmapWeeks(data.heatmapWeeks);
       setActiveSession(data.activeSession);
       return data;
     } catch {
@@ -115,60 +109,51 @@ export default function Attendance() {
 
   const isEmpty = useMemo(() => {
     if (loading || loadError) return false;
-    const hasRecords = weeklyGrid.some((row) =>
-      row.days.some((d) => d.status !== 'absent'),
-    );
-    return weeklyGrid.length === 0 || !hasRecords;
-  }, [loading, loadError, weeklyGrid]);
+    if (records.length > 0) return false;
+    return groups.every((g) => g.rows.every((r) => r.status === 'absent'));
+  }, [loading, loadError, records, groups]);
 
-  const kpiDefs = useMemo(
+  const stats = useMemo(
+    () =>
+      computeAttendanceStats(records, users, dateRange, {
+        isClockedIn,
+        elapsed,
+      }),
+    [records, users, dateRange, isClockedIn, elapsed],
+  );
+
+  const statChips = useMemo(
     () => [
       {
-        label: 'Present',
-        value: summary.present,
-        glyph: '✓',
+        value: stats.presentToday,
+        label: 'Present today',
         tintBg: 'var(--color-success-subtle)',
         tintFg: 'var(--color-success)',
-        delta: '',
-        deltaNote: 'on time',
-        deltaColor: 'var(--color-success)',
-        animationDelay: '0.02s',
+        icon: <Users size={18} />,
       },
       {
-        label: 'Absent',
-        value: summary.absent,
-        glyph: '—',
-        tintBg: 'var(--color-danger-subtle)',
-        tintFg: 'var(--color-danger)',
-        delta: '',
-        deltaNote: 'no record',
-        deltaColor: 'var(--color-muted)',
-        animationDelay: '0.06s',
+        value: stats.avgHours,
+        label: 'Avg hours / day',
+        tintBg: 'var(--color-info-subtle)',
+        tintFg: 'var(--color-info)',
+        icon: <Clock size={18} />,
       },
       {
-        label: 'Late',
-        value: summary.late,
-        glyph: '!',
+        value: stats.missingOut,
+        label: 'Missing check-outs',
         tintBg: 'var(--color-warning-subtle)',
         tintFg: 'var(--color-warning)',
-        delta: '',
-        deltaNote: 'after 9 AM',
-        deltaColor: 'var(--color-warning)',
-        animationDelay: '0.1s',
+        icon: <AlertTriangle size={18} />,
       },
       {
-        label: isClockedIn ? 'Your session' : 'Rate',
-        value: isClockedIn ? elapsed : `${summary.rate}%`,
-        glyph: isClockedIn ? '⏱' : '%',
+        value: stats.sessionValue,
+        label: stats.sessionLabel,
         tintBg: 'var(--color-primary-subtle)',
         tintFg: 'var(--color-primary)',
-        delta: '',
-        deltaNote: isClockedIn ? 'clock running' : 'attendance',
-        deltaColor: 'var(--color-primary)',
-        animationDelay: '0.14s',
+        icon: <Timer size={18} />,
       },
     ],
-    [summary, isClockedIn, elapsed],
+    [stats],
   );
 
   const handleCheckIn = async () => {
@@ -198,24 +183,14 @@ export default function Attendance() {
   };
 
   const handleExport = () => {
-    if (weeklyGrid.length === 0) return;
-    exportAttendanceCsv(weeklyGrid);
+    if (groups.length === 0) return;
+    exportAttendanceGroupsCsv(groups);
     toast.success('Attendance exported');
   };
 
   return (
-    <div style={{ animation: 'ds-rise .4s cubic-bezier(.2,.8,.2,1) both' }}>
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          gap: '16px',
-          flexWrap: 'wrap',
-          marginBottom: '24px',
-        }}
-      >
+    <div>
+      <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
           <h2 className="font-serif text-[30px] leading-[1.15] font-medium tracking-[-0.01em] text-[var(--color-text)] m-0">
             Attendance
@@ -224,7 +199,7 @@ export default function Attendance() {
             Who&apos;s in, hours logged, and the gaps to chase.
           </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+        <div className="flex items-center gap-3 flex-wrap">
           <DateRangePicker value={datePreset} onChange={setDatePreset} />
           <HeaderClockButton
             isClockedIn={isClockedIn}
@@ -244,38 +219,37 @@ export default function Attendance() {
         </div>
       </div>
 
-      {/* KPI row */}
       {loading ? (
         <AttendanceKpiSkeleton />
       ) : (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(166px, 1fr))',
-            gap: '14px',
-            marginBottom: '22px',
-          }}
-        >
-          {kpiDefs.map((k) => (
-            <DashboardKpiCard key={k.label} {...k} />
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(166px,1fr))] gap-3.5 mb-[22px]">
+          {statChips.map((chip) => (
+            <AttendanceStatChip key={chip.label} {...chip} />
           ))}
         </div>
       )}
 
-      {/* Main content */}
-      {loading ? (
-        <AttendanceSkeleton />
-      ) : loadError ? (
-        <AttendanceErrorState onRetry={loadData} />
-      ) : isEmpty ? (
-        <AttendanceEmptyState
-          onWidenRange={datePreset !== 'month' ? () => setDatePreset('month') : undefined}
-        />
-      ) : (
-        <div className="attendance-main-grid">
-          <AttendanceWeeklyTable grid={weeklyGrid} />
+      <div className="attendance-page-grid">
+        <div className="min-w-0">
+          {loading ? (
+            <AttendanceSkeleton />
+          ) : loadError ? (
+            <AttendanceErrorState onRetry={loadData} />
+          ) : isEmpty ? (
+            <AttendanceEmptyState
+              onWidenRange={datePreset !== 'month' ? () => setDatePreset('month') : undefined}
+            />
+          ) : (
+            <AttendanceRecordGroups groups={groups} />
+          )}
         </div>
-      )}
+
+        {!loading && !loadError && !isEmpty && heatmapWeeks.length > 0 && (
+          <aside className="min-w-0">
+            <AttendanceHeatmap weeks={heatmapWeeks} />
+          </aside>
+        )}
+      </div>
     </div>
   );
 }
