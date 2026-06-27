@@ -138,6 +138,7 @@ export default function Sidebar() {
               className={({ isActive }) =>
                 cn(
                   'relative flex h-[42px] items-center gap-3 rounded-[9px] transition-colors duration-150',
+                  'focus:outline-none focus-visible:shadow-[0_0_0_3px_var(--color-ring)]',
                   rail ? 'justify-center px-0' : 'justify-start px-3',
                   isActive
                     ? 'bg-[var(--color-primary-subtle)] text-[var(--color-primary)]'
@@ -181,7 +182,7 @@ export default function Sidebar() {
             <button
               type="button"
               onClick={() => setUserMenuOpen(false)}
-              className="flex h-10 w-full cursor-pointer items-center gap-[11px] rounded-lg border-none bg-transparent px-[11px] text-left text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-2)]"
+              className="flex h-10 w-full cursor-pointer items-center gap-[11px] rounded-lg border-none bg-transparent px-[11px] text-left text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-2)] focus:outline-none focus-visible:shadow-[0_0_0_3px_var(--color-ring)]"
             >
               <User size={17} />
               Profile &amp; settings
@@ -192,7 +193,7 @@ export default function Sidebar() {
                 toggleTheme();
                 setUserMenuOpen(false);
               }}
-              className="flex h-10 w-full cursor-pointer items-center gap-[11px] rounded-lg border-none bg-transparent px-[11px] text-left text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-2)]"
+              className="flex h-10 w-full cursor-pointer items-center gap-[11px] rounded-lg border-none bg-transparent px-[11px] text-left text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-2)] focus:outline-none focus-visible:shadow-[0_0_0_3px_var(--color-ring)]"
             >
               <span className="inline-block h-[17px] w-[17px] rounded-full border-[1.5px] border-current bg-[linear-gradient(120deg,currentColor_0_50%,transparent_50%_100%)]" />
               {themeMenuLabel}
@@ -201,7 +202,7 @@ export default function Sidebar() {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex h-10 w-full cursor-pointer items-center gap-[11px] rounded-lg border-none bg-transparent px-[11px] text-left text-sm font-medium text-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)]"
+              className="flex h-10 w-full cursor-pointer items-center gap-[11px] rounded-lg border-none bg-transparent px-[11px] text-left text-sm font-medium text-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)] focus:outline-none focus-visible:shadow-[0_0_0_3px_var(--color-ring)]"
             >
               <LogOut size={17} />
               Log out
@@ -212,8 +213,11 @@ export default function Sidebar() {
         <button
           type="button"
           onClick={toggleUserMenu}
+          aria-label="User menu"
+          aria-expanded={userMenuOpen}
           className={cn(
             'flex h-[52px] w-full cursor-pointer items-center gap-[11px] rounded-[11px] transition-colors duration-150',
+            'focus:outline-none focus-visible:shadow-[0_0_0_3px_var(--color-ring)]',
             rail ? 'justify-center px-0' : 'justify-start px-[9px]',
             userMenuOpen
               ? 'border border-[var(--color-border)] bg-[var(--color-surface-2)]'

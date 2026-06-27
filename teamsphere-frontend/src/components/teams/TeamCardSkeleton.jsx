@@ -1,29 +1,21 @@
-const shimmerStyle = {
-  background: 'var(--skel)',
-  backgroundSize: '300% 100%',
-  animation: 'ds-shimmer 1.3s infinite linear',
-  borderRadius: '8px',
-};
+import { SkeletonBlock } from '../SkeletonCard';
 
 export default function TeamCardSkeleton() {
   return (
     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[16px] p-5">
       <div className="flex items-center gap-3 mb-[18px]">
-        <div style={{ ...shimmerStyle, width: '40px', height: '40px', borderRadius: '11px' }} />
+        <SkeletonBlock className="h-10 w-10 rounded-[11px]" />
         <div>
-          <div style={{ ...shimmerStyle, width: '120px', height: '16px', marginBottom: '8px' }} />
-          <div style={{ ...shimmerStyle, width: '70px', height: '11px', borderRadius: '5px' }} />
+          <SkeletonBlock className="h-4 w-[120px] mb-2" />
+          <SkeletonBlock className="h-[11px] w-[70px] rounded-[5px]" />
         </div>
       </div>
       <div className="flex mb-[18px]">
         {Array.from({ length: 5 }, (_, i) => (
-          <div
+          <SkeletonBlock
             key={i}
+            className="h-10 w-10 rounded-full"
             style={{
-              ...shimmerStyle,
-              width: '40px',
-              height: '40px',
-              borderRadius: '999px',
               marginLeft: i === 0 ? 0 : '-12px',
               border: '2.5px solid var(--color-surface)',
             }}
@@ -31,7 +23,7 @@ export default function TeamCardSkeleton() {
         ))}
       </div>
       <div className="h-px bg-[var(--color-border)] mb-3.5" />
-      <div style={{ ...shimmerStyle, width: '96px', height: '14px' }} />
+      <SkeletonBlock className="h-[14px] w-24" />
     </div>
   );
 }

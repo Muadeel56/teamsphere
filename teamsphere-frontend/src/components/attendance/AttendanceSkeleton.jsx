@@ -1,65 +1,28 @@
-const shimmerStyle = {
-  background: 'var(--skel)',
-  backgroundSize: '300% 100%',
-  animation: 'ds-shimmer 1.3s infinite linear',
-  borderRadius: '8px',
-};
-
-function KpiSkeletonCard() {
-  return (
-    <div
-      style={{
-        background: 'var(--color-surface)',
-        border: '1px solid var(--color-border)',
-        borderRadius: '14px',
-        padding: '18px',
-        boxShadow: 'var(--shadow-sm)',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ ...shimmerStyle, width: '80px', height: '13px' }} />
-        <div style={{ ...shimmerStyle, width: '30px', height: '30px', borderRadius: '8px' }} />
-      </div>
-      <div style={{ ...shimmerStyle, width: '64px', height: '32px', margin: '14px 0 8px' }} />
-      <div style={{ ...shimmerStyle, width: '100px', height: '12px' }} />
-    </div>
-  );
-}
+import { SkeletonBlock, SkeletonCard } from '../SkeletonCard';
 
 function TableRowSkeleton() {
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px',
-        padding: '14px 18px',
-        borderTop: '1px solid var(--color-border)',
-      }}
-    >
-      <div style={{ ...shimmerStyle, width: '28px', height: '28px', borderRadius: '999px' }} />
-      <div style={{ ...shimmerStyle, width: '120px', height: '14px' }} />
-      <div style={{ flex: 1 }} />
-      {[0, 1, 2, 3, 4].map((i) => (
-        <div key={i} style={{ ...shimmerStyle, width: '8px', height: '8px', borderRadius: '999px' }} />
-      ))}
-      <div style={{ ...shimmerStyle, width: '72px', height: '14px' }} />
+    <div className="flex items-center gap-3.5 px-[18px] py-3.5 border-t border-[var(--color-border)]">
+      <SkeletonBlock className="h-[30px] w-[30px] rounded-full shrink-0" />
+      <SkeletonBlock className="h-[13px] w-[130px]" />
+      <SkeletonBlock className="h-[13px] w-14 ml-auto" />
+      <SkeletonBlock className="h-[13px] w-14" />
+      <SkeletonBlock className="h-[22px] w-[70px] rounded-full" />
     </div>
   );
 }
 
 export function AttendanceKpiSkeleton() {
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(216px, 1fr))',
-        gap: '16px',
-        marginTop: '24px',
-      }}
-    >
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(166px,1fr))] gap-3.5 mb-[22px]">
       {[0, 1, 2, 3].map((i) => (
-        <KpiSkeletonCard key={i} />
+        <SkeletonCard key={i} className="flex items-center gap-[13px] p-4">
+          <SkeletonBlock className="h-[38px] w-[38px] rounded-[10px] shrink-0" />
+          <div className="flex-1">
+            <SkeletonBlock className="h-8 w-16 mb-2" />
+            <SkeletonBlock className="h-3 w-24" />
+          </div>
+        </SkeletonCard>
       ))}
     </div>
   );
@@ -68,16 +31,8 @@ export function AttendanceKpiSkeleton() {
 export default function AttendanceSkeleton() {
   return (
     <div>
-      <div
-        style={{
-          marginTop: '16px',
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: '14px',
-          overflow: 'hidden',
-        }}
-      >
-        <div style={{ ...shimmerStyle, height: '40px', margin: '12px 18px', borderRadius: '6px' }} />
+      <div className="mt-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[14px] overflow-hidden">
+        <SkeletonBlock className="h-10 mx-[18px] my-3 rounded-md" />
         {[0, 1, 2, 3, 4].map((i) => (
           <TableRowSkeleton key={i} />
         ))}

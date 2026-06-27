@@ -1,21 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useUIStore } from '../store/uiStore';
+import { rangeOf } from '../lib/breakpoints';
 
-export function rangeOf(width) {
-  if (width < 768) return 'mobile';
-  if (width < 1100) return 'tablet';
-  return 'desktop';
-}
+export { rangeOf };
 
 export function useBreakpoint() {
-  const [range, setRange] = useState(() =>
-    typeof window !== 'undefined' ? rangeOf(window.innerWidth) : 'desktop',
-  );
-
-  useEffect(() => {
-    const onResize = () => setRange(rangeOf(window.innerWidth));
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
+  const range = useUIStore((s) => s.viewportRange);
 
   return {
     range,

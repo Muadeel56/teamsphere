@@ -16,7 +16,7 @@ export default function TasksViewToggle({ value, onChange }) {
             key={opt.id}
             type="button"
             onClick={() => onChange(opt.id)}
-            className="inline-flex items-center gap-[7px] h-8 px-3 rounded-[7px] border-none cursor-pointer text-[13px] font-semibold transition-[background,color] duration-150"
+            className={`inline-flex items-center gap-[7px] h-8 px-3 rounded-[7px] border-none cursor-pointer text-[13px] font-semibold transition-[background,color] duration-150 focus:outline-none focus-visible:shadow-[0_0_0_3px_var(--color-ring)]`}
             style={{
               background: isActive ? 'var(--color-primary-subtle)' : 'transparent',
               color: isActive ? 'var(--color-primary)' : 'var(--color-muted)',

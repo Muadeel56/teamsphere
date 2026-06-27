@@ -3,6 +3,8 @@ import StatusDot from './StatusDot';
 import { DAY_LABELS } from '../../lib/attendanceHelpers';
 
 export default function AttendanceWeeklyTable({ grid }) {
+  const dayLabels = grid[0]?.dayLabels ?? grid[0]?.days?.map((d) => d.label) ?? DAY_LABELS;
+
   return (
     <div
       style={{
@@ -31,7 +33,7 @@ export default function AttendanceWeeklyTable({ grid }) {
             >
               Member
             </th>
-            {DAY_LABELS.map((label) => (
+            {dayLabels.map((label) => (
               <th
                 key={label}
                 style={{
