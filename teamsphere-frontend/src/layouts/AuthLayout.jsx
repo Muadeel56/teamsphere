@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import LogoMark from '../components/LogoMark';
 import { ThemeToggleButton } from '../components/ThemeToggleIcon';
 import { useUIStore } from '../store/uiStore';
@@ -178,7 +178,7 @@ function DecorativePanel({ isNarrow }) {
   );
 }
 
-export default function AuthLayout({ children }) {
+export default function AuthLayout() {
   const location = useLocation();
   const theme = useUIStore((s) => s.theme);
   const toggleTheme = useUIStore((s) => s.toggleTheme);
@@ -222,7 +222,7 @@ export default function AuthLayout({ children }) {
         </div>
 
         <div className="flex flex-1 items-center justify-center px-7 pt-[18px] pb-9">
-          <div className="w-full max-w-[412px]">{children}</div>
+          <div className="w-full max-w-[412px]"><Outlet /></div>
         </div>
 
         <div className="px-7 pb-[26px] text-center font-mono text-xs tracking-[0.04em] text-[var(--color-subtle)]">

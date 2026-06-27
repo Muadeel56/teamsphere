@@ -34,7 +34,7 @@ export default function Login() {
       setAuth(null, token, refreshToken);
       const userRes = await getCurrentUser();
       setAuth(userRes.data, token, refreshToken);
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       setError('Invalid email or password. Please try again.');
       console.error('Login error:', err);

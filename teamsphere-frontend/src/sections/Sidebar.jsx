@@ -19,7 +19,7 @@ import { getUserDisplayName, getUserInitials } from '../lib/userInitials';
 import { cn } from '../lib/utils';
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/projects', icon: FolderKanban },
   { name: 'Tasks', href: '/tasks', icon: ListChecks },
   { name: 'Teams', href: '/teams', icon: Users },
@@ -131,7 +131,7 @@ export default function Sidebar() {
             <NavLink
               key={item.name}
               to={item.href}
-              end={item.href === '/'}
+              end={item.href === '/dashboard'}
               onClick={handleNavClick}
               onMouseEnter={() => setHoveredNav(item.href)}
               onMouseLeave={() => setHoveredNav(null)}
