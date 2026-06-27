@@ -1,5 +1,5 @@
 export const ROUTE_TITLES = {
-  '/': 'Dashboard',
+  '/dashboard': 'Dashboard',
   '/projects': 'Projects',
   '/tasks': 'Tasks',
   '/teams': 'Teams',

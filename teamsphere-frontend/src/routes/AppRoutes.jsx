@@ -14,40 +14,24 @@ import AuthLayout from '../layouts/AuthLayout';
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={
-          <AuthLayout>
-            <Login />
-          </AuthLayout>
-        }
-      />
-      <Route
-        path="/register"
-        element={
-          <AuthLayout>
-            <Register />
-          </AuthLayout>
-        }
-      />
-      <Route
-        path="/forgot-password"
-        element={
-          <AuthLayout>
-            <ForgotPassword />
-          </AuthLayout>
-        }
-      />
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+      </Route>
+
       <Route element={<ProtectedRoute />}>
         <Route element={<MainLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="projects" element={<Projects />} />
-          <Route path="tasks" element={<Tasks />} />
-          <Route path="teams" element={<Teams />} />
-          <Route path="attendance" element={<Attendance />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/teams" element={<Teams />} />
+          <Route path="/attendance" element={<Attendance />} />
         </Route>
       </Route>
-      <Route path="*" element={<Navigate to="/" />} />
+
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }
